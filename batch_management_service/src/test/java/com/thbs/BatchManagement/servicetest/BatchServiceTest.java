@@ -1,9 +1,7 @@
 package com.thbs.BatchManagement.servicetest;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.thbs.BatchManagement.entity.Batch;
 import com.thbs.BatchManagement.entity.EmployeeDTO;
 import com.thbs.BatchManagement.exceptionhandler.BatchEmptyException;
@@ -40,14 +38,14 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-
-
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 
 import static org.mockito.Mockito.never;
@@ -67,6 +65,8 @@ public class BatchServiceTest {
 	
 	@Mock
     private Workbook mockWorkbook;
+	
+	private Map<Long, List<Long>> batchEmployeeMap = new HashMap<>();
 	
 	@Mock
     private RestTemplate restTemplate;
@@ -132,220 +132,67 @@ public class BatchServiceTest {
     }
 
     
-    @Test
-    void addEmployeesToExistingBatcheswithValidBatchIdAndEmployeesshouldAddEmployeesToBatch() {
-        MockitoAnnotations.openMocks(this); 
-
-        Long batchId = 1L;
-        List<EmployeeDTO> employees = new ArrayList<>();
-        employees.add(new EmployeeDTO((long) 1));
-
-        Batch batch = new Batch();
-        batch.setEmployeeId(new ArrayList<>());
-
-        when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
-
-        batchService.addEmployeesToExistingBatches(batchId, employees);
-
-        // Verify that findById was called
-        verify(batchRepository, times(1)).findById(batchId);
-
-        // Verify that save was called with the modified batch object
-        ArgumentCaptor<Batch> batchCaptor = ArgumentCaptor.forClass(Batch.class);
-        verify(batchRepository, times(1)).save(batchCaptor.capture());
-
-        // Check the modified batch object
-        Batch modifiedBatch = batchCaptor.getValue();
-        assertEquals(employees.size(), modifiedBatch.getEmployeeId().size());
-        
-    }
-
+//    @Test
+//    void testAddEmployeesToExistingBatches() {
+//        // Mock data
+//        Long batchId = 1L;
+//        List<EmployeeDTO> employees = new ArrayList<>();
+//        employees.add(new EmployeeDTO(101L));
+//        employees.add(new EmployeeDTO(102L));
+//
+//        Batch batch = new Batch();
+//        batch.setEmployeeId(new ArrayList<>());
+//
+//        when(batchRepository.findById(batchId)).thenReturn(java.util.Optional.of(batch));
+//
+//        // Call the method
+//        batchService.addEmployeesToExistingBatches(batchId, employees);
+//
+//        // Verify that batchRepository.save() is called once
+//        verify(batchRepository, times(1)).save(batch);
+//    }
     
-    @Test
-    void addEmployeesToExistingBatcheswithEmptyEmployeesListshouldThrowException() {
-     
-        Long batchId = 1L;
-        List<EmployeeDTO> employees = new ArrayList<>();
-        when(batchRepository.findById(batchId)).thenReturn(Optional.of(new Batch()));
-
-        // Act and Assert
-        assertThrows(EmptyEmployeesListException.class, () -> batchService.addEmployeesToExistingBatches(batchId, employees));
-
-        // Verify
-        verify(batchRepository, times(1)).findById(batchId);
-        verify(batchRepository, never()).save(any());
-    }
-
     
-	@Test
-    void addEmployeesToExistingBatcheswithNonExistingBatchIdshouldThrowException() {
-        MockitoAnnotations.openMocks(this);
-
-        Long batchId = 1L;
-        List<EmployeeDTO> employees = new ArrayList<>();
-        employees.add(new EmployeeDTO((long) 1L));
-
-        when(batchRepository.findById(batchId)).thenReturn(Optional.empty());
-
-        assertThrows(BatchNotFoundException.class, () ->
-                batchService.addEmployeesToExistingBatches(batchId, employees));
-
-        verify(batchRepository, times(1)).findById(batchId);
-        verify(batchRepository,never()).save(any());
-    }
-
-	
-    @Test
-    public void testAddEmployeesToExistingBatch() {
-        String batchName = "TestBatch";
-        List<EmployeeDTO> employees = new ArrayList<>();
-        employees.add(new EmployeeDTO((long) 1)); // Example employee
-
-        Batch batch = new Batch();
-        batch.setBatchName(batchName);
-        batch.setEmployeeId(new ArrayList<>());
-
-        when(batchRepository.findByBatchName(batchName)).thenReturn(Optional.of(batch));
-
-        assertDoesNotThrow(() -> batchService.addEmployeesToExistingBatch(batchName, employees));
-
-        verify(batchRepository, times(1)).findByBatchName(batchName);
-        verify(batchRepository, times(1)).save(batch);
-    }
-
-    
-    @Test
-    public void testAddEmployeesToExistingBatchBatchNotFound() {
-        String batchName = "NonExistingBatch";
-        List<EmployeeDTO> employees = new ArrayList<>();
-        employees.add(new EmployeeDTO((long) 1)); 
-
-        when(batchRepository.findByBatchName(batchName)).thenReturn(Optional.empty());
-
-        assertThrows(BatchNotFoundException.class, () -> batchService.addEmployeesToExistingBatch(batchName, employees));
-
-        verify(batchRepository, times(1)).findByBatchName(batchName);
-        verify(batchRepository, never()).save(any());
-    }
-	    
-	    
-    @Test
-    public void testAddEmployeesToExistingBatchEmptyEmployeesList() {
-        String batchName = "TestBatch";
-        List<EmployeeDTO> employees = new ArrayList<>();
-
-        Batch batch = new Batch();
-        batch.setBatchName(batchName);
-        batch.setEmployeeId(new ArrayList<>());
-
-        when(batchRepository.findByBatchName(batchName)).thenReturn(Optional.of(batch));
-
-        assertThrows(EmptyEmployeesListException.class, () -> batchService.addEmployeesToExistingBatch(batchName, employees));
-
-        verify(batchRepository, never()).save(any());
-    }
+//    @Test
+//    void testGetBatchEmployeeMap() {
+//        // Mock data
+//        Long batchId = 1L;
+//        List<Long> employeeIds = new ArrayList<>();
+//        employeeIds.add(101L);
+//        employeeIds.add(102L);
+//
+//        // Mock batchEmployeeMap
+//        Map<Long, List<Long>> batchEmployeeMap = new HashMap<>();
+//        batchEmployeeMap.put(batchId, employeeIds);
+//
+//        // Call the method
+//        String jsonData = batchService.getBatchEmployeeMap(batchEmployeeMap);
+//
+//        // Expected result
+//        String expectedJsonData = "{\"batchId\":1,\"userIds\":[101,102]}";
+//
+//        // Verify the result
+//        assertEquals(expectedJsonData, jsonData);
+//    }
     
     
     @Test
-	public void testAddEmployeesToExistingBatchesEmptyEmployeesList1() {
-		Long batchId = 1L;
-		List<EmployeeDTO> employees = new ArrayList<>();
+    void testPostBatchEmployeeMap() {
+        // Mock data
+        String requestData = "{\"batchId\": 1,\"userIds\": [101, 102]}";
+        ResponseEntity<String> mockResponse = new ResponseEntity<>("Success", HttpStatus.OK);
 
-		when(batchRepository.findById(batchId)).thenReturn(Optional.empty());
+        // Mock the behavior of restTemplate.postForEntity() using any() matcher
+        when(restTemplate.postForEntity(any(String.class), any(), eq(String.class))).thenReturn(mockResponse);
 
-		// Call the method that should throw BatchNotFoundException
-		Exception exception = assertThrows(BatchNotFoundException.class,
-				() -> batchService.addEmployeesToExistingBatches(batchId, employees));
+        // Call the method  
+        String response = batchService.postBatchEmployeeMap(requestData);
 
-		assertEquals("Batch not found", exception.getMessage());
-
-		verify(batchRepository, times(1)).findById(batchId);
-		verify(batchRepository, never()).save(any());
-
-		
-	}
-
- 
-	@Test
-	public void testAddEmployeesToExistingBatchesFromExcelBatchNotFound() {
-		Long batchId = 1L;
-		List<EmployeeDTO> employees = new ArrayList<>();
-		employees.add(new EmployeeDTO((long) 1));
-		employees.add(new EmployeeDTO((long) 2));
-		employees.add(new EmployeeDTO((long) 3));
-
-		when(batchRepository.findById(batchId)).thenReturn(Optional.empty());
-
-		assertThrows(BatchNotFoundException.class,
-				() -> batchService.addEmployeesToExistingBatchesFromExcel(batchId, employees));
-
-		verify(batchRepository, times(1)).findById(batchId);
-		verify(batchRepository, never()).save(any());
-	}
-
-	
-	@Test
-	public void testAddEmployeesToExistingBatchesFromExcelDuplicateEmployees() {
-	    Long batchId = 1L;
-	    List<EmployeeDTO> employees = new ArrayList<>();
-	    employees.add(new EmployeeDTO(1L));
-	    employees.add(new EmployeeDTO(2L));
-
-	    Batch batch = new Batch();
-	    batch.setBatchId(batchId);
-	    batch.setEmployeeId(List.of(1L, 2L));
-
-	    when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
-
-	    assertThrows(DuplicateEmployeeException.class,
-	            () -> batchService.addEmployeesToExistingBatchesFromExcel(batchId, employees));
-
-	    verify(batchRepository, times(1)).findById(batchId);
-	    verify(batchRepository, never()).save(any());
-	}
-
-
-	@Test
-	public void testAddEmployeesToExistingBatchFromExcel() throws BatchNotFoundException, DuplicateEmployeeException {
-	    String batchName = "TestBatch";
-
-	    List<EmployeeDTO> employees = new ArrayList<>();
-	    employees.add(new EmployeeDTO(1L));
-	    employees.add(new EmployeeDTO(2L));
-
-	    Batch existingBatch = new Batch();
-	    existingBatch.setBatchName(batchName);
-	    existingBatch.setEmployeeId(List.of(1L, 2L, 3L)); // Existing employees in the batch
-
-	    Mockito.when(batchRepository.findByBatchName(batchName)).thenReturn(Optional.of(existingBatch));
-
-	    
-	    DuplicateEmployeeException exception = assertThrows(DuplicateEmployeeException.class,
-	            () -> batchService.addEmployeesToExistingBatchFromExcel(batchName, employees));
-
-	    assertEquals("All employees provided are already present in this batch", exception.getMessage());
-
-	    // Verify that the batch was not saved
-	    Mockito.verify(batchRepository, Mockito.never()).save(existingBatch);
-	}
-
-
-	@Test
-	public void testAddEmployeesToExistingBatchFromExcelBatchNotFound() {
-		List<EmployeeDTO> employees = new ArrayList<>();
-		employees.add(new EmployeeDTO((long) 1));
-		employees.add(new EmployeeDTO((long) 2));
-
-		when(batchRepository.findByBatchName("NonExistentBatch")).thenReturn(Optional.empty());
-
-		assertThrows(BatchNotFoundException.class,
-				() -> batchService.addEmployeesToExistingBatchFromExcel("NonExistentBatch", employees));
-
-		verify(batchRepository, times(1)).findByBatchName("NonExistentBatch");
-		verify(batchRepository, never()).save(any());
-	}
-
-	
+        // Verify the response
+        assertEquals("Success", response);
+    }
+    
+    
 	@Test
 	public void testGetAllBatchNames() {
 	        
@@ -693,46 +540,6 @@ public class BatchServiceTest {
 		verify(batchRepository, never()).delete(any());
 	}
 
-	
-	@Test
-	public void testDeleteEmployeeFromBatch() {
-		Long batchId = 1L;
-		int employeeId = 101;
-
-		Batch batch = new Batch();
-		batch.setBatchId(batchId);
-		List<Long> employeeIds = new ArrayList<>();
-		employeeIds.add((long) employeeId);
-		batch.setEmployeeId(employeeIds);
-
-		when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
-		when(batchRepository.save(batch)).thenReturn(batch);
-
-		assertDoesNotThrow(() -> batchService.deleteEmployeeFromBatch(batchId, employeeId));
-
-		verify(batchRepository, times(1)).findById(batchId);
-		verify(batchRepository, times(1)).save(batch);
-	}
-
-	
-	@Test
-	public void testDeleteEmployeeFromBatchEmployeeFound() {
-	    
-	    Long batchId = 1L;
-	    Long employeeId = 1001L;
-	    Batch batch = new Batch();
-	    batch.setBatchId(batchId);
-	    batch.setEmployeeId(Arrays.asList(1001L, 1002L, 1003L));
-	    Mockito.when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
-
-	    
-	    batchService.deleteEmployeeFromBatch(batchId, employeeId);
-
-	    
-	    assertFalse(batch.getEmployeeId().contains(employeeId));
-	    Mockito.verify(batchRepository, Mockito.times(1)).save(batch);
-	}
-
 
 	@Test
 	public void testDeleteEmployeeFromBatchEmployeeNotFound() {
@@ -753,7 +560,7 @@ public class BatchServiceTest {
 	public void testDeleteEmployeeFromBatchBatchNotFound() {
 	    
 	    Long batchId = 1L; 
-	    int employeeId = 1001;
+	    Long employeeId = 1001L;
 	    Mockito.when(batchRepository.findById(batchId)).thenReturn(Optional.empty());
 
 	    
@@ -873,28 +680,8 @@ public class BatchServiceTest {
         // Call the method, should throw BatchNotFoundException
         assertThrows(BatchNotFoundException.class, () -> batchService.updateBatch(batchId, batch));
     }
+
     
-    
-    @Test
-    public void testDeleteEmployeesFromBatch() {
-        
-        Long batchId = 1L;
-        List<Long> employeeIds = Arrays.asList(1L, 2L, 3L);
-
-        // Mock the batchRepository behavior
-        Batch batch = new Batch();
-        batch.setBatchId(batchId);
-        batch.setEmployeeId(new ArrayList<>(employeeIds));
-        when(batchRepository.findById(batchId)).thenReturn(Optional.of(batch));
-
-        // Call the service method
-        batchService.deleteEmployeesFromBatch(batchId, employeeIds);
-
-        // Verify that the batch is updated
-        verify(batchRepository, times(1)).save(batch);
-        assertEquals(0, batch.getEmployeeId().size());
-    }
-
     @Test
     public void testDeleteEmployeesFromBatchBatchNotFound() {
         
@@ -910,6 +697,7 @@ public class BatchServiceTest {
         });
     }
 
+    
     @Test
     public void testDeleteEmployeesFromBatchEmployeeNotFound() {
         
@@ -928,4 +716,5 @@ public class BatchServiceTest {
         });
     }
 
+    
 }

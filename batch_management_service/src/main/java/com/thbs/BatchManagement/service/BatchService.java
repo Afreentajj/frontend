@@ -1,8 +1,7 @@
 package com.thbs.BatchManagement.service;
 
 import java.io.IOException;
-
-
+import org.springframework.http.HttpHeaders;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import org.springframework.http.MediaType;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -30,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -159,6 +159,7 @@ public class BatchService {
 
 	
 	// adding employees to existing batch by batchid
+	private Map<Long, List<Long>> batchEmployeeMap = new HashMap<>();
 	public void addEmployeesToExistingBatches(Long batchId, List<EmployeeDTO> employees) {
 	    Batch batch = batchRepository.findById(batchId)
 	            .orElseThrow(() -> new BatchNotFoundException("Batch not found"));
@@ -171,34 +172,20 @@ public class BatchService {
 	    if (batch.getEmployeeId() == null) {
 	        batch.setEmployeeId(new ArrayList<>());
 	    }
+	    List<Long> newEmployeeIds = new ArrayList<>();
+        // Add new employees to the existing batch
+        for (EmployeeDTO employeeDTO : employees) {
+            batch.getEmployeeId().add(employeeDTO.getEmployeeId());
+            newEmployeeIds.add(employeeDTO.getEmployeeId());
+        }
 
-	    
-	    // Add new employees to the existing batch
-	    for (EmployeeDTO employeeDTO : employees) {
-	        batch.getEmployeeId().add(employeeDTO.getEmployeeId());
-	    }
-
+        batchEmployeeMap.put(batchId, newEmployeeIds);
 	    batchRepository.save(batch);
-	}
-	
-	
-	// adding employees to existing batch by batchname
-	public void addEmployeesToExistingBatch(String batchName, List<EmployeeDTO> employees) {
-		 Batch batch = batchRepository.findByBatchName(batchName).orElse(null);
-
-		    if (batch == null) {
-		        throw new BatchNotFoundException("Batch not found");
-		    } else {
-		        if (employees.isEmpty()) {
-		            throw new EmptyEmployeesListException("No employees to add");
-		        } else {
-		            // Add new employees to the existing batch
-		            for (EmployeeDTO employeeDTO : employees) {
-		                batch.getEmployeeId().add(employeeDTO.getEmployeeId());
-		            }
-		            batchRepository.save(batch);
-		        }
-		    }
+	    
+	    // Call getBatchEmployeeMap() method by passing batchEmployeeMap as argument
+	    
+        String jsonData = getBatchEmployeeMap(batchEmployeeMap);
+        
 	}
 	
 		
@@ -227,37 +214,14 @@ public class BatchService {
 	        if (!newEmployeeIds.isEmpty()) {
 	            batch.getEmployeeId().addAll(newEmployeeIds);
 	            batchRepository.save(batch);
+	            
+	         // Adding batch ID and new employee IDs to the batchEmployeeMap
+                batchEmployeeMap.put(batchId, newEmployeeIds);
+                
+                String jsonData = getBatchEmployeeMap(batchEmployeeMap);
 	        }
 	    } else {
 	        throw new BatchNotFoundException("Batch not found");
-	    }
-	}
-
-
-	// bulk upload to existing batch by batchname
-	public void addEmployeesToExistingBatchFromExcel(String batchName, List<EmployeeDTO> employees)  throws BatchNotFoundException, DuplicateEmployeeException {
-	    Batch batch = batchRepository.findByBatchName(batchName)
-	            .orElseThrow(() -> new BatchNotFoundException("Batch not found"));
-
-	    List<Long> newEmployeeIds = new ArrayList<>();
-	    List<Long> existingEmployeeIds = new ArrayList<>();
-
-	    for (EmployeeDTO employee : employees) {
-	        Long employeeId = employee.getEmployeeId();
-	        if (batch.getEmployeeId().contains(employeeId)) {
-	            existingEmployeeIds.add(employeeId); // If employee already exists in batch
-	        } else {
-	            newEmployeeIds.add(employeeId); // If employee is new to batch
-	        }
-	    }
-
-	    if (newEmployeeIds.isEmpty() && !existingEmployeeIds.isEmpty()) {
-	        throw new DuplicateEmployeeException("All employees provided are already present in this batch");
-	    }
-
-	    if (!newEmployeeIds.isEmpty()) {
-	        batch.getEmployeeId().addAll(newEmployeeIds);
-	        batchRepository.save(batch);
 	    }
 	}
 
@@ -380,7 +344,43 @@ public class BatchService {
 	        throw new BatchNotFoundException("Batch with id " + batchId + " not found.");
 	    }
 	}
+	
+	
+	// list of all batch names based on emloyeeid they are associated
+	public List<Map<String, Object>> getBatchesByEmployeeId(Long employeeId) {
+	    List<Batch> batches = batchRepository.findAll();
+	    List<Map<String, Object>> result = new ArrayList<>();
 
+	    for (Batch batch : batches) {
+	        List<Long> employeeIds = batch.getEmployeeId();
+	        if (employeeIds != null && employeeIds.contains(employeeId)) {
+	            Map<String, Object> batchInfo = new HashMap<>();
+	            batchInfo.put("batchId", batch.getBatchId());
+	            batchInfo.put("batchName", batch.getBatchName());
+	            result.add(batchInfo);
+	        }
+	    }
+
+	    return result;
+	}
+
+
+	// list of all new users    
+	public String getBatchEmployeeMap(Map<Long, List<Long>> batchEmployeeMap) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("{\n");
+        for (Map.Entry<Long, List<Long>> entry : batchEmployeeMap.entrySet()) {
+            stringBuilder.append("  \"batchId\": ").append(entry.getKey()).append(",\n");
+            stringBuilder.append("  \"userIds\": ").append(entry.getValue()).append("\n");
+        }
+        stringBuilder.append("}");
+        String result = stringBuilder.toString();
+        
+         // Call postBatchEmployeeMap() method with the result
+         postBatchEmployeeMap(result);  
+       	 return result;
+    }
+		
 	
 	// deleting batch with batchid
 	public void deleteBatchById(Long batchId) {
@@ -403,53 +403,84 @@ public class BatchService {
 		}
 	}
 
-	 
-	// deleting employees with batchname
-	public void deleteEmployeeFromBatch(String batchName, long employeeId) {
-		Batch batch = batchRepository.findByBatchName(batchName)
-				.orElseThrow(() -> new BatchNotFoundException("Batch not found"));
-		if (batch.getEmployeeId().contains(employeeId)) {
-			batch.getEmployeeId().remove(Long.valueOf(employeeId));
-			batchRepository.save(batch);
-		} else {
-			throw new EmployeeNotFoundException("Employee not found in the batch");
-		}
-	}
 
-
-	// deleting employees with batchid
+	// deleting employee with batchid
+	private Map<Long, List<Long>> deleteEmployeeMap = new HashMap<>();
 	public void deleteEmployeeFromBatch(Long batchId, long employeeId) {
-	    Batch batch = batchRepository.findById(batchId)
-	            .orElseThrow(() -> new BatchNotFoundException("Batch not found"));
+        Batch batch = batchRepository.findById(batchId)
+                .orElseThrow(() -> new BatchNotFoundException("Batch not found"));
 
-	    if (batch.getEmployeeId().contains(employeeId)) {
-	        batch.setEmployeeId(batch.getEmployeeId().stream()
-	                .filter(id -> id != employeeId)
-	                .collect(Collectors.toList()));
-	        batchRepository.save(batch);
-	    } else {
-	        throw new EmployeeNotFoundException("Employee not found in the batch");
-	    }
-	}
+        if (batch.getEmployeeId().contains(employeeId)) {
+
+            // Store the deleted employee information before deletion
+            List<Long> employeeList = deleteEmployeeMap.getOrDefault(batchId, new ArrayList<>());
+            employeeList.add(employeeId);
+            deleteEmployeeMap.put(batchId, employeeList);
+
+            batch.setEmployeeId(batch.getEmployeeId().stream()
+                    .filter(id -> id != employeeId)
+                    .collect(Collectors.toList()));
+            System.out.println(deleteEmployeeMap);
+
+            batchRepository.save(batch);
+            String jsonData1 = getDeleteEmployeeMap(deleteEmployeeMap);
+
+        } else {
+            throw new EmployeeNotFoundException("Employee not found in the batch");
+        }
+    }
 
 	
 	//deleting  multiple employees with batchids
 	public void deleteEmployeesFromBatch(Long batchId, List<Long> employeeIds) {
-        Batch batch = batchRepository.findById(batchId)
-                .orElseThrow(() -> new BatchNotFoundException("Batch not found"));
- 
-        List<Long> existingEmployeeIds = batch.getEmployeeId();
- 
-        for (Long employeeId : employeeIds) {
-            if (!existingEmployeeIds.contains(employeeId)) {
-                throw new EmployeeNotFoundException("Employee not found in the batch: " + employeeId);
-            } 
-            existingEmployeeIds.remove(employeeId);
-        }
- 
-        batch.setEmployeeId(existingEmployeeIds);
-        batchRepository.save(batch);
-    }
+	    Batch batch = batchRepository.findById(batchId)
+	            .orElseThrow(() -> new BatchNotFoundException("Batch not found"));
+
+	    List<Long> existingEmployeeIds = batch.getEmployeeId();
+	    Map<Long, List<Long>> deleteEmployeeMap = new HashMap<>(); // Map to store deleted employees
+
+	    // Iterate through employeeIds to remove them from the batch
+	    for (Long employeeId : employeeIds) {
+	        if (!existingEmployeeIds.contains(employeeId)) {
+	            throw new EmployeeNotFoundException("Employee not found in the batch: " + employeeId);
+	        } 
+	        existingEmployeeIds.remove(employeeId);
+	        
+	        // Add the deleted employee to the deleteEmployeeMap
+	        if (!deleteEmployeeMap.containsKey(batchId)) {
+	            deleteEmployeeMap.put(batchId, new ArrayList<>());
+	        }
+	        deleteEmployeeMap.get(batchId).add(employeeId);
+	    }
+
+	    batch.setEmployeeId(existingEmployeeIds);
+	    System.out.println(deleteEmployeeMap);
+	    batchRepository.save(batch);
+
+	    // Now deleteEmployeeMap contains all the deleted employee IDs with their corresponding batch IDs
+	    // You can use this map as needed
+	    String jsonData1 = getDeleteEmployeeMap(deleteEmployeeMap);
+	}
+
+	
+	// list of all deleting users    
+	private String getDeleteEmployeeMap(Map<Long, List<Long>> deleteEmployeeMap) {
+	        StringBuilder stringBuilder = new StringBuilder();
+	        stringBuilder.append("{\n");
+	        for (Map.Entry<Long, List<Long>> entry : deleteEmployeeMap.entrySet()) {
+	            stringBuilder.append("  \"batchId\": ").append(entry.getKey()).append(",\n");
+	            stringBuilder.append("  \"userIds\": ").append(entry.getValue()).append("\n");
+	        }
+	        stringBuilder.append("}");
+	        String result = stringBuilder.toString();
+
+	        System.out.println(result);
+	        // Call postBatchEmployeeMap() method with the result
+	        postDeleteEmployeeMap(result);
+
+	        return result;
+	}
+	 
 
 	// Updating end date with id
 	public void updateEndDate(Long batchId, LocalDate endDate) {
@@ -491,7 +522,7 @@ public class BatchService {
             existingBatch.setStartDate(batch.getStartDate());
             existingBatch.setEndDate(batch.getEndDate());
             existingBatch.setBatchSize(batch.getBatchSize());
-
+ 
             batchRepository.save(existingBatch); 
         } 
         else {
@@ -551,8 +582,75 @@ public class BatchService {
 	        }
 	    }
 
-	 
-
-    return mergedEmployeeIds;
+	 return mergedEmployeeIds;
 	}
+	
+	
+	// post data to endpoint
+	public String postBatchEmployeeMap(String requestData) {
+	    // Define the URL of the endpoint
+	    String url = "http://learning-resource-service/user-progress/update-progress";
+
+	    // Set the request headers
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setContentType(MediaType.APPLICATION_JSON);
+
+	    // Create the HttpEntity with the JSON payload and headers
+	    HttpEntity<String> request = new HttpEntity<>(requestData, headers);
+
+	    // Make the POST request using RestTemplate
+	    try {
+	        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+
+	        // Get the response body
+	        String responseBody = response.getBody();
+
+	        // Handle the response if needed
+	        // For example, check the response status code
+	        if (response.getStatusCode().is2xxSuccessful()) {
+	            System.out.println("POST request was successful");
+	        } else {
+	            System.out.println("POST request failed");
+	        }
+
+	        // Return the response body
+	        return responseBody;
+	    } catch (HttpClientErrorException ex) {
+	        // If an error occurs, handle the exception
+	        // Print the error response
+	        System.err.println("Error response from server: " + ex.getResponseBodyAsString());
+	        throw ex; // Rethrow the exception or handle it as needed
+	    }
+	}
+
+	
+	// deleting users in post rest template call 
+	 private String postDeleteEmployeeMap(String jsonPayload) {
+	        // Define the URL of the endpoint
+	        String url = "http://learning-resource-service/user-progress/delete-progress";
+
+	        // Set the request headers
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.setContentType(MediaType.APPLICATION_JSON);
+
+	        // Create the HttpEntity with the JSON payload and headers
+	        HttpEntity<String> request = new HttpEntity<>(jsonPayload, headers);
+
+	        // Make the DELETE request using RestTemplate
+	        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, request, String.class);
+
+	        // Handle the response if needed
+	        // For example, check the response status code
+	        if (response.getStatusCode().is2xxSuccessful()) {
+	            System.out.println("DELETE request was successful");
+	        } else {
+	            System.out.println("DELETE request failed");
+	        }
+
+	        // Return the response body
+	        return response.getBody();
+	    }
+	 
+	 
+	
 }

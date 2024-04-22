@@ -2,12 +2,9 @@ package com.thbs.BatchManagement.entitytest;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.junit.jupiter.api.Assertions.assertNull;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import com.thbs.BatchManagement.entity.EmployeeDTO;
 
 public class EmployeeDTOTest {
@@ -19,7 +16,6 @@ public class EmployeeDTOTest {
         employeeDTO = new EmployeeDTO();
     }
 
-    
     
     @Test
     public void testEmployeeId() {
