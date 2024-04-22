@@ -1,9 +1,6 @@
 package com.thbs.BatchManagement.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
-
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,10 +9,7 @@ import com.thbs.BatchManagement.entity.Batch;
 import com.thbs.BatchManagement.entity.EmployeeDTO;
 import com.thbs.BatchManagement.exceptionhandler.BatchNotFoundException;
 import com.thbs.BatchManagement.exceptionhandler.DuplicateEmployeeException;
-
 import com.thbs.BatchManagement.service.BatchService;
-
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -57,14 +51,6 @@ public class BatchController {
         batchService.addEmployeesToExistingBatches(batchId, employees);
         return "Employees added to batch successfully";
     }
-
-    
-    // adding employees to existing batch by batchname
-    @PostMapping("/employee/batch-name/{batchName}")
-    public String addEmployeesToBatch(@PathVariable String batchName, @RequestBody List<EmployeeDTO> employees) {
-            batchService.addEmployeesToExistingBatch(batchName, employees);
-            return "Employees added to batch successfully";  
-    }
     
     
     // bulk upload to existing batch by batchid
@@ -75,16 +61,7 @@ public class BatchController {
         return "Employees added to batch successfully";  
     }
 
-    
-    // bulk upload to existing batch by batchname
-    @PostMapping("/existing-batch/bulk/batch-name/{batchName}")
-    public String addEmployeesToExistingBatchBulkUpload(@PathVariable("batchName") String batchName, @RequestParam("file") MultipartFile file) throws BatchNotFoundException, DuplicateEmployeeException, IOException {
-            List<EmployeeDTO> employees = batchService.parseExcel(file);
-            batchService.addEmployeesToExistingBatchFromExcel(batchName, employees);
-            return "Employees added to batch successfully";   
-    }
-
-
+   
     // list of batch details by batchid
     @GetMapping("/id/{batchId}")
     public ResponseEntity<Object> getBatchById(@PathVariable Long batchId) {    
@@ -139,8 +116,15 @@ public class BatchController {
     public List<Map<String, Object>> getEmployeesInBatchWithDetails(@PathVariable Long batchId) {
         return batchService.getEmployeesInBatchWithDetails(batchId);
     }
-   
-     
+    
+	    
+	// list of all batch names based on emloyeeid they are associated
+    @GetMapping("/employee/batches/{employeeId}")
+    public List<Map<String, Object>> getBatchesByEmployeeId(@PathVariable Long employeeId) {
+        return batchService.getBatchesByEmployeeId(employeeId);
+    }
+
+    
     // deleting batch with batchid
     @DeleteMapping("/batch-id/{batchId}")
     public String deleteBatch(@PathVariable Long batchId) {
@@ -156,18 +140,10 @@ public class BatchController {
         return "Batch deleted successfully";
     }
 
-    
-    // deleting employees with batchname
-    @DeleteMapping("/batch-name/{batchName}/{employeeId}")
-    public String deleteEmployeeFromBatch(@PathVariable String batchName, @PathVariable int employeeId) {
-        batchService.deleteEmployeeFromBatch(batchName, employeeId);
-        return "Employee deleted from batch successfully";
-    }
-
      
     // deleting employees with batchid
     @DeleteMapping("/batch-id/{batchId}/{employeeId}")
-    public String deleteEmployeeFromBatch(@PathVariable Long batchId, @PathVariable int employeeId) {
+    public String deleteEmployeeFromBatch(@PathVariable Long batchId, @PathVariable Long employeeId) {
         batchService.deleteEmployeeFromBatch(batchId, employeeId);
         return "Employee deleted from batch successfully";
     }
@@ -221,5 +197,6 @@ public class BatchController {
         return batchService.findRemainingEmployees(batchId, allEmployeeIds);
     }
     
-   
+    
+    
 }

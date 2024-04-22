@@ -1,7 +1,6 @@
 package com.thbs.BatchManagement.controllertest;
 
 import com.thbs.BatchManagement.controller.BatchController;
-
 import com.thbs.BatchManagement.entity.Batch;
 import com.thbs.BatchManagement.entity.EmployeeDTO;
 import com.thbs.BatchManagement.exceptionhandler.BatchNotFoundException;
@@ -106,27 +105,6 @@ public class BatchControllerTest {
         // Verify that batchService.addEmployeesToExistingBatches was called with the correct arguments
         verify(batchService).addEmployeesToExistingBatches(batchId, employees);
     }
-   
-    
-    @Test
-    public void testAddEmployeesToExistingBatch() {
-        // Mock data
-        String batchName = "TestBatch";
-        List<EmployeeDTO> employees = new ArrayList<>();
-        employees.add(new EmployeeDTO((long) 1)); 
-
-        // Mock addEmployeesToExistingBatch method
-        doNothing().when(batchService).addEmployeesToExistingBatch(anyString(), anyList());
-
-        // Perform the addEmployeesToBatch operation
-        String result = batchController.addEmployeesToBatch(batchName, employees);
-
-        // Verify the result
-        assertEquals("Employees added to batch successfully", result);
-
-        // Verify that batchService.addEmployeesToExistingBatch was called with the correct arguments
-        verify(batchService).addEmployeesToExistingBatch(batchName, employees);
-    }
 
     
     @Test
@@ -152,32 +130,6 @@ public class BatchControllerTest {
         // Verify that batchService.parseExcel and batchService.addEmployeesToExistingBatchesFromExcel were called with the correct arguments
         verify(batchService).parseExcel(file);
         verify(batchService).addEmployeesToExistingBatchesFromExcel(batchId, employees);
-    }
-   
-	
-    @Test
-    public void testAddEmployeesToExistingBatchBulkUpload() throws IOException, BatchNotFoundException, DuplicateEmployeeException {
-        // Mock data
-        String batchName = "Test Batch";
-        MultipartFile file = new MockMultipartFile("file", "test.txt", "text/plain", "test data".getBytes());
-        List<EmployeeDTO> employees = new ArrayList<>();
-        employees.add(new EmployeeDTO((long) 1)); 
-
-        // Mock parseExcel method
-        when(batchService.parseExcel(file)).thenReturn(employees);
-
-        // Mock addEmployeesToExistingBatchFromExcel method
-        doNothing().when(batchService).addEmployeesToExistingBatchFromExcel(anyString(), anyList());
-
-        // Perform the addEmployeesToExistingBatchBulkUpload operation
-        String result = batchController.addEmployeesToExistingBatchBulkUpload(batchName, file);
-
-        // Verify the result
-        assertEquals("Employees added to batch successfully", result);
-
-        // Verify that batchService.parseExcel and batchService.addEmployeesToExistingBatchFromExcel were called with the correct arguments
-        verify(batchService).parseExcel(file);
-        verify(batchService).addEmployeesToExistingBatchFromExcel(batchName, employees);
     }
 	  
     
@@ -331,22 +283,9 @@ public class BatchControllerTest {
     
     
     @Test
-    public void testDeleteEmployeeFromBatch() {
-        String batchName = "TestBatch";
-        int employeeId = 123;
-
-        // Perform the deleteEmployeeFromBatch operation
-        batchController.deleteEmployeeFromBatch(batchName, employeeId);
-
-        // Verify that deleteEmployeeFromBatch is called
-        verify(batchService, times(1)).deleteEmployeeFromBatch(batchName, employeeId);
-    }
-    
-    
-    @Test
     public void testDeleteEmployeeFromBatchById() {
         Long batchId = 1L;
-        int employeeId = 123;
+        Long employeeId = 123L;
 
         // Perform the deleteEmployeeFromBatch operation
         batchController.deleteEmployeeFromBatch(batchId, employeeId);
@@ -408,6 +347,8 @@ public class BatchControllerTest {
         // Verify interactions
         verify(batchService, times(1)).updateBatch(batchId, batch);  
     }
+    
+    
     @Test
     public void testDeleteEmployeesFromBatch() { 
         
@@ -424,6 +365,7 @@ public class BatchControllerTest {
         assertEquals("Employees deleted from batch successfully", result);
         verify(batchService, times(1)).deleteEmployeesFromBatch(batchId, employeeIds);
     }
+    
     
     
 }

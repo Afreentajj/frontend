@@ -1,8 +1,6 @@
 package com.thbs.BatchManagement.repository;
 
 import java.util.Optional;
-
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import com.thbs.BatchManagement.entity.Batch;
@@ -18,4 +16,6 @@ public interface BatchRepository  extends JpaRepository<Batch, Long>{
     Optional<Batch> findByBatchName(String batchName);
     
     Optional<Batch> findById(Long batchId);
+    
+    
 }
