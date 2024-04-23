@@ -26,6 +26,8 @@ public class Topic {
     private Long topicID;
 
     private String topicName;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne
