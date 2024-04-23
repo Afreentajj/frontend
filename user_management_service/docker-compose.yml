@@ -22,14 +22,7 @@ services:
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
       SPRING_JPA_DATABASE: mysql
       SERVER_PORT: 4321
-      SPRING_APPLICATION_NAME: user-service
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
- 
-  eureka:
-    image: eureka:latest
-    ports:
-      - "8761:8761"
-    restart: always
+      SPRING_APPLICATION_NAME: user-service   
  
   mysql-db:
     image: mysql:latest
