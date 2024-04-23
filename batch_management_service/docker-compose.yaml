@@ -1,9 +1,15 @@
 version: '3'
 services:
+  mysqldb:
+    image: mysql:latest
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_DATABASE: batchdata
+      MYSQL_ROOT_PASSWORD: root
+    restart: always
   batchmanagement:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: batch_management_service_batchmanagement:latest
     ports:
       - "8090:8090"
     environment:
@@ -17,11 +23,4 @@ services:
       - mysqldb
     restart: always
  
-  mysqldb:
-    image: mysql:latest
-    ports:
-      - "3309:3306"
-    environment:
-      MYSQL_DATABASE: batchdata
-      MYSQL_ROOT_PASSWORD: root
-    restart: always
+  
