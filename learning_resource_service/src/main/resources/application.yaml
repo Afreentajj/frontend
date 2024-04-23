@@ -1,0 +1,9 @@
+cloud:
+  aws:
+    credentials:
+      accessKey: 
+      secretKey: 
+
+
+    region:
+      static: eu-west-2
