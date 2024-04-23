@@ -9,7 +9,6 @@ services:
       - "4321:4321"
     depends_on:
       - mysql-db
-      - eureka
     restart: always
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/jwts
