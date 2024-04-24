@@ -47,7 +47,7 @@ public class AuthenticationController {
     } catch (UserManagementException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
             AuthenticationResponse.builder()
-                .message("User with the given email already exists")
+                .message(e.getMessage())
                 .build()
         );
     }

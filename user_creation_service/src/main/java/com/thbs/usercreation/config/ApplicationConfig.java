@@ -13,7 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
-import com.thbs.usercreation.auditing.ApplicationAuditAware;
 import com.thbs.usercreation.repository.UserRepo;
 
 import lombok.RequiredArgsConstructor;
@@ -39,11 +38,7 @@ public class ApplicationConfig {
     return authProvider;
   }
 
-  // Configure a bean for auditor aware
-  @Bean
-  public AuditorAware<Integer> auditorAware() {
-    return new ApplicationAuditAware(); // Initialize an instance of auditor aware
-  }
+  
 
   // Configure a bean for authentication manager
   @Bean

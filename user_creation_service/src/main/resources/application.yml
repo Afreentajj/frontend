@@ -1,6 +1,6 @@
 spring:
   application:
-    name: user-management-service
+    name: user-service
   datasource:
     url: jdbc:mysql://localhost:3306/jwts
     username: root
@@ -28,4 +28,4 @@ application:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://172.18.4.81:8761/eureka
+      defaultZone: http://13.41.179.170:8761/eureka
