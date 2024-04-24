@@ -1,23 +1,27 @@
-version: '3.7'
+version: '3.8'
 
 services:
   mysql:
-    image: mysql:latest
-    container_name: mysql-db
-    restart: always
+    image: mysql:8.0.35
+    container_name: mysql_batch_db
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: batchdata
     ports:
-      - "3399:3306"
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
 
   batch-management-service:
-    image: batch_management_service_batchmanagement:latest
-    container_name: batch-management-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: batch-management-service-new
     ports:
       - "8090:8090"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3399/batchdata?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/batchdata?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
@@ -31,4 +35,5 @@ services:
     restart: always
     depends_on:
       - mysql
-
+volumes:
+  mysql_data:

@@ -1,5 +1,5 @@
-version: '3.7'
-
+version: '3'
+ 
 services:
   mysql:
     image: mysql:latest
@@ -10,7 +10,7 @@ services:
       MYSQL_DATABASE: batchdata
     ports:
       - "3399:3306"
-
+ 
   batch-management-service:
     image: batch_management_service_batchmanagement:latest
     container_name: batch-management-service

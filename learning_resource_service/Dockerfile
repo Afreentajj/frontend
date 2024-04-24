@@ -1,18 +1,26 @@
+FROM openjdk:17
 
-FROM maven:3.8.4-openjdk-17-slim AS builder
-# Set the working directory in the container
 WORKDIR /app
-# Copy the entire project (source code)
-COPY . .
-# Run Maven clean and package
+
+# Copy the Maven project files
+COPY pom.xml .
+
+# Resolve Maven dependencies
+RUN mvn dependency:go-offline
+
+# Copy the source code
+COPY src src
+
+# Build the project
 RUN mvn clean package -DskipTests
-# Start a new stage for the final image
-FROM openjdk:17-slim
-# Set the working directory in the container
-WORKDIR /app
-# Copy the JAR file from the builder stage to the final image
-COPY --from=builder /app/target/*.jar app.jar
-# Expose the port your app runs on
+
+# Copy the built JAR file
+COPY target/*.jar app.jar
+
+# Expose port 2222
 EXPOSE 2222
-# Command to run the application
+
+# Define the command to run the Spring Boot application when the container starts
 CMD ["java", "-jar", "app.jar"]
+
+
