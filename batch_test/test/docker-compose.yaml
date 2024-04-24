@@ -17,12 +17,12 @@ services:
     ports:
       - "8090:8090"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3399/batchdata?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3399/batchdata?createDatabaseIfNotExist=true"
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQL8Dialect
       SPRING_WEBCORS_ALLOWED_ORIGINS: "*"
       SPRING_WEBCORS_ALLOWED_METHODS: "*"
       SPRING_WEBCORS_ALLOWED_HEADERS: "*"
