@@ -1,5 +1,5 @@
 version: '3.8'
- 
+
 services:
   mysql:
     image: mysql:8.0.35
@@ -8,16 +8,16 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: learning_plan_service
+      MYSQL_DATABASE: plandb
     volumes:
       - mysql_data:/var/lib/mysql
-    restart: always
- 
+    restart: unless-stopped
+
   lms:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: learning_plan_service_app
+    container_name: learning_plan_app
     ports:
       - "1111:1111"
     depends_on:
@@ -25,13 +25,13 @@ services:
     environment:
       SPRING_APPLICATION_NAME: learning-plan-service
       SERVER_PORT: 1111
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/learning_plan_service?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/plandb?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
     restart: always
- 
+
 volumes:
   mysql_data:
