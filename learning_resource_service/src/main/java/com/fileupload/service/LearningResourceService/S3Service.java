@@ -311,6 +311,7 @@ public class S3Service {
 
 			// Delete the resource entry from the database
 			resourceRepo.deleteById(resourceId);
+			progressRepository.deleteByResourceId(resourceId);
 
 			// Check if the resource was a link
 			if ("link".equalsIgnoreCase(fileType)) {

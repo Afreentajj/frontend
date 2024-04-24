@@ -3,8 +3,10 @@ package com.fileupload.repository.ProgressRespository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fileupload.model.ProgressModel.Progress;
 import com.fileupload.model.LearningResourceModel.Resource;
@@ -135,4 +137,8 @@ public interface ProgressRepository extends JpaRepository<Progress, Long> {
 
      void deleteByUserIdAndBatchId(Long userId, Long batchId);
 
+     @Transactional
+     @Modifying
+     @Query(value = "DELETE FROM progress p WHERE p.resource_id = :resourceId",nativeQuery = true)
+     void deleteByResourceId(long resourceId);
 }

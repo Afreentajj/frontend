@@ -44,17 +44,23 @@ public class BatchProgressService {
 
 
     public List<BatchWiseProgressDTO> findBatchwiseProgress() {
-        List<Object[]> batches=batchProgressRepository.findAllBatches();
+        List<Object[]> batches = batchProgressRepository.findAllBatches();
         List<BatchWiseProgressDTO> batchProgressList = new ArrayList<>();
-
+    
         for (Object[] result : batches) {
             long batchId = (long) result[0];
-            BatchProgressDTO progress=calculateBatchProgress(batchId);
-            batchProgressList.add(new BatchWiseProgressDTO(batchId, progress.getBatchProgress()));
+            try {
+                BatchProgressDTO progress = calculateBatchProgress(batchId);
+                batchProgressList.add(new BatchWiseProgressDTO(batchId, progress.getBatchProgress()));
+            } catch (Exception e) {
+                System.err.println("Error calculating progress for batchId " + batchId + ": " + e.getMessage());
+                continue;
+            }
         }
-
+    
         return batchProgressList;
     }
+    
 
     public List<UserBatchProgressDTO> calculateOverallBatchProgressAllUsers(Long batchId) throws BatchIdNotFoundException {
         List<Object[]> users=batchProgressRepository.findAllUsers(batchId);
