@@ -1,13 +1,21 @@
-# Use a multi-stage build for Maven dependencies and application packaging
-FROM maven:3.8.4-openjdk-17 AS build
+# Use a Maven base image with JDK and Maven installed
+FROM maven:3.8.4-openjdk-17-slim
+
+# Set the working directory in the container
 WORKDIR /app
-#COPY pom.xml .
+
+# Copy the entire project (source code)
 COPY . .
+
+# Build the application
 RUN mvn -DskipTests clean package
- 
-# Use a smaller base image for the runtime
-FROM openjdk:17-jdk-slim
+
+# Set the working directory in the container for the runtime
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+
+# Expose the port your app runs on
 EXPOSE 8761
-CMD ["java", "-jar", "app.jar"]
+
+# Command to run the application
+CMD ["java", "-jar", "/app/target/*.jar"]
+
