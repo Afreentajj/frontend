@@ -11,7 +11,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
-      - "3308:3306"
+      - "3315:3306"
  
   security-application:
     build:
