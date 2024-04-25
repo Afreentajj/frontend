@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-Application<capstone-hope>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.THIS.capstonehope.Application",
+            "projectName": "capstone-hope",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
