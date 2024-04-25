@@ -32,7 +32,6 @@ services:
       SPRING_WEBCORS_ALLOWED_HEADERS: "*"
       SPRING_WEBCORS_ALLOW_CREDENTIALS: "true"
       SPRING_WEBCORS_MAX_AGE: "3600"
-    restart: always
     depends_on:
       - mysql
 volumes:
